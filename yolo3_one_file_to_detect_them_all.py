@@ -6,8 +6,11 @@ from keras.layers.merge import add, concatenate
 from keras.models import Model
 import struct
 import cv2
+import sys
 
-np.set_printoptions(threshold=np.nan)
+#np.set_printoptions(threshold=np.nan)
+np.set_printoptions(threshold=np.inf)
+#np.set_printoptions(threshold=sys.maxsize)
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
@@ -259,6 +262,8 @@ def make_yolov3_model():
 def preprocess_input(image, net_h, net_w):
     new_h, new_w, _ = image.shape
 
+    #print(image.shape)
+
     # determine the new size of the image
     if (float(net_w)/new_w) < (float(net_h)/new_h):
         new_h = (new_h * net_w)/new_w
@@ -270,10 +275,17 @@ def preprocess_input(image, net_h, net_w):
     # resize the image to the new size
     resized = cv2.resize(image[:,:,::-1]/255., (int(new_w), int(new_h)))
 
+    #print(resized.shape)
+
     # embed the image into the standard letter box
     new_image = np.ones((net_h, net_w, 3)) * 0.5
-    new_image[int((net_h-new_h)//2):int((net_h+new_h)//2), int((net_w-new_w)//2):int((net_w+new_w)//2), :] = resized
+
+    #new_image[int((net_h-new_h)//2):int((net_h+new_h)//2), int((net_w-new_w)//2):int((net_w+new_w)//2), :] = resized
+
+    new_image[int((net_h-new_h)//2):int((net_h-new_h)//2)+int(new_h), int((net_w-new_w)//2):int((net_w-new_w)//2)+int(new_w), :] = resized
     new_image = np.expand_dims(new_image, 0)
+
+    #print(new_image.shape)
 
     return new_image
 
